@@ -1,5 +1,21 @@
 # px4_offboard_control
 
+## Installation
+1. mavros:
+```
+sudo apt-get install ros-$ROS_DISTRO-mavros ros-$ROS_DISTRO-mavros-extras
+```
+2. GeographicLib (opens new window)datasets
+```
+wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh
+sudo bash ./install_geographiclib_datasets.sh   
+```
+3. offboard ros pkg.
+```
+cd ~/catkin_ws/src
+git clone  https://github.com/mengchaoheng/px4_offboard_control.git
+```
+
 ## Usage
 1. Run PX4
 ```ConSole
@@ -10,17 +26,20 @@ make px4_sitl gazebo
 
 3. Run mavros:
 ```
+cd ~/catkin_ws
 roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
 ```
 4. Run offboard node:
 ```
+cd ~/catkin_ws
 roslaunch my_offboard_node offb_node.launch
 ```
 
+=============================
 ## Another way:
-=============================
-### Run on different computer 
-=============================
+
+### Run on different computer:
+
 1. On computer which ip is 192.168.3.146, run:
 ```ConSole
 cd <PX4 directory>
@@ -59,9 +78,8 @@ in the same computer which running mavros, run offboard node:
 ```
 roslaunch my_offboard_node offb_node.launch
 ```
-=============================
-###  PX4 uer_guide
-=============================
+###  PX4 uer_guide:
+
 
 Or just like PX4 uer_guide:
 1. PX4 v1.14

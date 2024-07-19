@@ -1,7 +1,7 @@
 # px4_offboard_control
-<video width="500" height="500" controls>
-    <source src="/config/demo.mov" type="video/mp4">
-</video>
+<p align="center">
+  <img src="config/demo.gif" width="500">
+</p>
 
 ## Installation
 1. mavros:

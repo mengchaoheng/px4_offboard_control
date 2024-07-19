@@ -32,16 +32,15 @@ typedef enum POSITION_TARGET_TYPEMASK
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "offb_node");
-    ros::NodeHandle nh;
+    ros::NodeHandle nh("~"); //have to be ("~") since need to setup param
     bool _setpoint_raw_mode;
-
     nh.param<bool>("setpoint_raw_mode", _setpoint_raw_mode, false);
-
-    ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("mavros/state", 20, state_cb);
-    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 20);
-    ros::Publisher local_pos_raw_pub = nh.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local", 20);
-    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
-    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
+    // ROS_INFO("_setpoint_raw_mode: %d",_setpoint_raw_mode);
+    ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("state", 20, state_cb);
+    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("setpoint_position/local", 20);
+    ros::Publisher local_pos_raw_pub = nh.advertise<mavros_msgs::PositionTarget>("setpoint_raw/local", 20);
+    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("cmd/arming");
+    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("set_mode");
 
     // 设置发布速率大于2Hz
     ros::Rate rate(20.0);
@@ -62,6 +61,7 @@ int main(int argc, char **argv)
     // pose = trajectory.calculate_pose(0); // 使用初始位置
     target_point = Lissajous.calculate_target_point(0); // inital point
     for(int i = 100; ros::ok() && i > 0; --i){
+        ROS_INFO("Inital");
         if (!_setpoint_raw_mode){
             pose.header.stamp = ros::Time::now();
             pose.header.frame_id = "map";
@@ -120,8 +120,8 @@ int main(int argc, char **argv)
         }
 
         if(current_state.mode == "OFFBOARD" && current_state.armed && (ros::Time::now() - last_request > ros::Duration(5.0))){
-            ROS_INFO("running");
             double t = (ros::Time::now() - last_request - ros::Duration(5.0)).toSec();
+            ROS_INFO("Running");
             // pose = trajectory.calculate_pose(t);
             target_point = Lissajous.calculate_target_point(t);
             // When in position control mode, send only waypoints
@@ -188,11 +188,10 @@ int main(int argc, char **argv)
                 if (!std::isfinite(target_point.yaw_rate)) {
                     target_point.type_mask |= POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE;
                 }
-                
                 local_pos_raw_pub.publish(target_point);
             }
         }else{
-            ROS_INFO("before OFFBOARD and armed");
+            ROS_INFO("Try to armed and flight to inital point");
             if (!_setpoint_raw_mode){
                 pose.header.stamp = ros::Time::now();
                 pose.header.frame_id = "map";

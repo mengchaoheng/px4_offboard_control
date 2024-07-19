@@ -1,6 +1,11 @@
 <launch>
     <node name="offb_node" pkg="my_offboard_node" type="offb_node" output="screen">
-        <param name="setpoint_raw_mode" value="false" />
+        <param name="setpoint_raw_mode" type="bool" value="true" />
+        <remap from="~/setpoint_position/local" to="mavros/setpoint_position/local"/>
+        <remap from="~/setpoint_raw/local" to="mavros/setpoint_raw/local"/>
+        <remap from="~/cmd/arming" to="mavros/cmd/arming"/>
+        <remap from="~/state" to="mavros/state"/>
+        <remap from="~/set_mode" to="mavros/set_mode"/>
     </node>
-
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find my_offboard_node)/config/config_file.rviz" />
 </launch>

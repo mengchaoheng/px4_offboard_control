@@ -59,8 +59,8 @@ public:
 
 
         // acc
-        target_point.acceleration_or_force.x = -(radius*(angular_velocity)*(angular_velocity)) * sin(theta);
-        target_point.acceleration_or_force.y = -(radius*(2* angular_velocity))*(2* angular_velocity) * sin(2* theta);
+        target_point.acceleration_or_force.x = NAN;//-(radius*(angular_velocity)*(angular_velocity)) * sin(theta);
+        target_point.acceleration_or_force.y = NAN;//-(radius*(2* angular_velocity))*(2* angular_velocity) * sin(2* theta);
         target_point.acceleration_or_force.z = NAN;
 
         //yaw

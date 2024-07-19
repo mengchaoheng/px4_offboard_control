@@ -83,6 +83,7 @@ roslaunch my_offboard_node offb_node.launch
 
 Or just like PX4 uer_guide:
 1. PX4 v1.14
+```
 cd <PX4-Autopilot_clone>
 DONT_RUN=1 make px4_sitl_default gazebo-classic
 source ~/catkin_ws/devel/setup.bash    # (optional)
@@ -91,9 +92,13 @@ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)/Tools/simulation/gazebo-classic/sitl_gazebo-classic
 
 roslaunch px4 posix_sitl.launch
-
+```
 2.  mavros
+```
 roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
+```
 
 3. Offboard node
+```
 roslaunch my_offboard_node offb_node.launch
+```

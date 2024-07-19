@@ -1,0 +1,6 @@
+<launch>
+    <node name="offb_node" pkg="my_offboard_node" type="offb_node" output="screen">
+        <param name="setpoint_raw_mode" value="false" />
+    </node>
+
+</launch>

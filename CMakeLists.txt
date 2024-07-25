@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   mavros_msgs
   roscpp
+  rosbag
 )
 
 ## System dependencies are found with CMake's conventions
@@ -136,6 +137,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/my_offboard_node_node.cpp)
 add_executable(offb_node src/offb_node.cpp)
+add_executable(offb_dataset_node src/offb_dataset_node.cpp)
+add_executable(offboard_node src/offboard_node.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -153,6 +156,8 @@ add_executable(offb_node src/offb_node.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(offb_node ${catkin_LIBRARIES})
+target_link_libraries(offb_dataset_node ${catkin_LIBRARIES})
+target_link_libraries(offboard_node ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############

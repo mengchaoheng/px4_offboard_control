@@ -50,7 +50,7 @@ public:
         // y = r*sin(2*(2*pi/T)*t);
         target_point.position.x = center_x + radius*sin(theta);
         target_point.position.y = center_y + radius*sin(2* theta);
-        target_point.position.z = altitude + 0;
+        target_point.position.z = altitude + 0.05*radius*sin(4*theta);
 
         // velocity
         target_point.velocity.x = (radius*(angular_velocity))*cos(theta);
@@ -64,7 +64,7 @@ public:
         target_point.acceleration_or_force.z = NAN;
 
         //yaw
-        // _yaw_setpoint = _initial_heading;
+        // target_point.yaw = 0.f;
         // _yawspeed_setpoint = NAN;
         target_point.yaw =  atan2f((radius*(2* angular_velocity))*cos(2* theta), (radius*(angular_velocity))*cos(theta));
 

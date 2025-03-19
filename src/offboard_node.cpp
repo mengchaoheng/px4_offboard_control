@@ -9,7 +9,8 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
-
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
 mavros_msgs::State current_state;
 void state_cb(const mavros_msgs::State::ConstPtr& msg){
     current_state = *msg;
@@ -39,9 +40,28 @@ int main(int argc, char **argv)
     }
 
     geometry_msgs::PoseStamped pose;
-    pose.pose.position.x = 2;
-    pose.pose.position.y = 1;
-    pose.pose.position.z = 2;
+    pose.pose.position.x = 0;
+    pose.pose.position.y = 0;
+    pose.pose.position.z = 1.5;
+
+    // 创建一个tf::TransformBroadcaster对象
+    tf::TransformBroadcaster br;
+
+    // 欧拉角（Yaw、Pitch、Roll）角度，单位为弧度
+    double yaw = M_PI / 2.0;    // Yaw角度
+    double pitch = 0.0;  // Pitch角度
+    double roll = 0.0;   // Roll角度
+
+    // 将欧拉角转换为四元数
+    tf::Quaternion q;
+    q.setRPY(roll, pitch, yaw);  // tf::Quaternion使用的顺序是roll, pitch, yaw
+    // 将tf::Quaternion对象的值赋给geometry_msgs::PoseStamped对象
+    pose.pose.orientation.x = q.x();
+    pose.pose.orientation.y = q.y();
+    pose.pose.orientation.z = q.z();
+    pose.pose.orientation.w = q.w();
+
+
 
     //send a few setpoints before starting
     for(int i = 30; ros::ok() && i > 0; --i){

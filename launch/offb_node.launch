@@ -1,7 +1,7 @@
 <launch>
-    <node name="offb_dataset_node" pkg="my_offboard_node" type="offb_dataset_node" output="screen">
+    <!-- <node name="offb_dataset_node" pkg="my_offboard_node" type="offb_dataset_node" output="screen"> -->
     <!-- <node name="offboard_node" pkg="my_offboard_node" type="offboard_node" output="screen"> -->
-    <!-- <node name="offb_node" pkg="my_offboard_node" type="offb_node" output="screen"> -->
+    <node name="offb_node" pkg="my_offboard_node" type="offb_node" output="screen">
         <param name="setpoint_raw_mode" type="bool" value="true" />
         <param name="use_bag" type="bool" value="true" />
         <remap from="~/setpoint_raw/local" to="mavros/setpoint_raw/local"/>

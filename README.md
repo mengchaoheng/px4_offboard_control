@@ -25,7 +25,11 @@ git clone  https://github.com/mengchaoheng/px4_offboard_control.git
 cd <PX4 directory>
 make px4_sitl gazebo
 ```
-2. Run QGC.
+Or run [ductedfan simulations](https://github.com/mengchaoheng/DuctedFanUAV-Autopilot):
+```
+make px4_sitl gazebo_ductedfan4
+```
+2. Run QGC (Optional).
 
 3. Run mavros:
 ```
@@ -37,7 +41,13 @@ roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
 cd ~/catkin_ws
 roslaunch my_offboard_node offb_node.launch
 ```
-
+You can select different startup methods on the first line of the `offb_node.launch` file:
+```xml
+    <!-- <node name="offb_dataset_node" pkg="my_offboard_node" type="offb_dataset_node" output="screen"> --> <!-- trajectory from  data-->
+    <!-- <node name="offboard_node" pkg="my_offboard_node" type="offboard_node" output="screen"> --> <!-- to a setpoint-->
+    <node name="offb_node" pkg="my_offboard_node" type="offb_node" output="screen"> <!-- Lissajous-->
+     
+```
 =============================
 ## Another way:
 

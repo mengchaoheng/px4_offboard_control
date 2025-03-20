@@ -58,7 +58,7 @@ You can select different startup methods on the first line of the `offb_node.lau
 cd <PX4 directory>
 make px4_sitl gazebo
 ```
-(Optional) If run QGC on another computer, you can setup ip in `px4-rc.mavlink`:
+(Optional) If run QGC on another computer, you can setup ip in `PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink`:
 ```cpp
 # GCS link
 mavlink start -x -u $udp_gcs_port_local -r 4000000 -f -t 192.168.3.169  #  IP of QGC, in the same LAN
@@ -78,7 +78,7 @@ roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
 ```
 roslaunch mavros px4.launch fcu_url:="udp://:14540@192.168.3.146:14557"
 ```
-in which 192.168.3.146 is the ip of running `make px4_sitl gazebo`, and on that computer, you can setup ip in `px4-rc.mavlink`:
+in which 192.168.3.146 is the ip of running `make px4_sitl gazebo`, and on that computer, you can setup ip in `PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink`:
 ```cpp
 # API/Offboard link
 mavlink start -x -u $udp_offboard_port_local -r 4000000 -f -m onboard -o $udp_offboard_port_remote -t 192.168.3.184 #  IP of mavros and offboard node

@@ -1,22 +1,29 @@
 # px4_offboard_control
 <p align="center">
+  <img src="config/df.gif" width="500">
+</p>
+<p align="center">
   <img src="config/demo.gif" width="500">
 </p>
 
 ## Installation
-1. mavros:
+1. Before that, you need to install Ubuntu 20.04 and the corresponding ROS Noetic version.
+2. mavros:
 ```
-sudo apt-get install ros-$ROS_DISTRO-mavros ros-$ROS_DISTRO-mavros-extras
+sudo apt-get install ros-Noetic-mavros ros-Noetic-mavros-extras
 ```
-2. GeographicLib (opens new window)datasets
+3. GeographicLib (opens new window)datasets
 ```
 wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh
 sudo bash ./install_geographiclib_datasets.sh   
 ```
-3. offboard ros pkg.
-```
+4. offboard ros pkg.
+``` 
+mkdir -p catkin_ws/src
 cd ~/catkin_ws/src
 git clone  https://github.com/mengchaoheng/px4_offboard_control.git
+cd ~/catkin_ws
+catkin_make
 ```
 
 ## Usage
@@ -39,13 +46,13 @@ roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
 4. Run offboard node:
 ```
 cd ~/catkin_ws
-roslaunch my_offboard_node offb_node.launch
+roslaunch px4_offboard_control offb_node.launch
 ```
 You can select different startup methods on the first line of the `offb_node.launch` file:
 ```xml
-    <!-- <node name="offb_dataset_node" pkg="my_offboard_node" type="offb_dataset_node" output="screen"> --> <!-- trajectory from  data-->
-    <!-- <node name="offboard_node" pkg="my_offboard_node" type="offboard_node" output="screen"> --> <!-- to a setpoint-->
-    <node name="offb_node" pkg="my_offboard_node" type="offb_node" output="screen"> <!-- Lissajous-->
+    <!-- <node name="offb_dataset_node" pkg="px4_offboard_control" type="offb_dataset_node" output="screen"> --> <!-- trajectory from  data-->
+    <!-- <node name="offboard_node" pkg="px4_offboard_control" type="offboard_node" output="screen"> --> <!-- to a setpoint-->
+    <node name="offb_node" pkg="px4_offboard_control" type="offb_node" output="screen"> <!-- Lissajous-->
      
 ```
 =============================
@@ -89,7 +96,7 @@ If all running in the same computer, delete `-t 192.168.3.184` in mavlink start 
 4.run offboard node
 in the same computer which running mavros, run offboard node:
 ```
-roslaunch my_offboard_node offb_node.launch
+roslaunch px4_offboard_control offb_node.launch
 ```
 ###  PX4 uer_guide:
 
@@ -113,5 +120,5 @@ roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
 
 3. Offboard node
 ```
-roslaunch my_offboard_node offb_node.launch
+roslaunch px4_offboard_control offb_node.launch
 ```

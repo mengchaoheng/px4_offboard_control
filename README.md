@@ -1,5 +1,8 @@
 # px4_offboard_control
 <p align="center">
+  <img src="config/df.gif" width="500">
+</p>
+<p align="center">
   <img src="config/demo.gif" width="500">
 </p>
 

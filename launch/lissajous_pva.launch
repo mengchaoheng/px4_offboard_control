@@ -17,8 +17,8 @@
 
     <!-- Timing and visualization -->
     <param name="publish_rate" value="100.0"/>
-    <param name="start_delay" value="3.0"/>
-    <param name="preflight_setpoint_count" value="100"/>
+    <param name="start_delay" value="15.0"/>
+    <param name="preflight_setpoint_count" value="500"/>
     <param name="actual_tail_size" value="200"/>
     <param name="reference_path_cycles" value="1.0"/>
     <param name="reference_path_samples" value="800"/>

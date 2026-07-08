@@ -91,6 +91,14 @@ in the same computer which running mavros, run offboard node:
 ```
 roslaunch px4_offboard_control lissajous_pva.launch
 ```
+### Only QGC Run on different computer (For arm ubuntu)
+
+1. make px4_sitl gazebo-classic_ductedfan4 
+
+2. roslaunch mavros px4.launch   fcu_url:="udp://:14540@127.0.0.1:14557"   gcs_url:="udp://:14556@10.25.33.211:14550"  # Run on the same computoer as px4_sitl, and QGC ip: 10.25.33.211
+
+3. roslaunch px4_offboard_control lissajous_pva.launch
+
 ###  PX4 uer_guide:
 
 

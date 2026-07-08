@@ -106,13 +106,34 @@ public:
 
         // Yaw follows horizontal velocity direction.
         target.yaw = std::atan2(target.velocity.y, target.velocity.x);
-        target.yaw_rate = 0.0;
+
+        // Analytical yaw rate:
+        // yaw = atan2(v_y, v_x)
+        // yaw_rate = (v_x * a_y - v_y * a_x) / (v_x^2 + v_y^2)
+        const double yaw_rate_den =
+            target.velocity.x * target.velocity.x +
+            target.velocity.y * target.velocity.y;
+
+        if (yaw_rate_den > 1.0e-8) {
+            target.yaw_rate =
+                (target.velocity.x * target.acceleration_or_force.y -
+                 target.velocity.y * target.acceleration_or_force.x) /
+                yaw_rate_den;
+        } else {
+            target.yaw_rate = 0.0;
+        }
 
         target.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-        target.type_mask = mavros_msgs::PositionTarget::IGNORE_YAW_RATE;
+
+        // Send full PVA + yaw + yaw_rate.
+        target.type_mask = 0;
 
         if (!use_yaw_) {
-            target.type_mask |= mavros_msgs::PositionTarget::IGNORE_YAW;
+            target.yaw = 0.0;
+            target.yaw_rate = 0.0;
+            target.type_mask |=
+                mavros_msgs::PositionTarget::IGNORE_YAW |
+                mavros_msgs::PositionTarget::IGNORE_YAW_RATE;
         }
 
         return target;

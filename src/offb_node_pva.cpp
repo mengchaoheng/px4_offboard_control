@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cmath>
-#include <deque>
 #include <string>
 
 #include <ros/ros.h>
@@ -13,6 +12,13 @@
 #include <nav_msgs/Path.h>
 
 #include "my_offboard_node/CircularTrajectory.h"
+
+enum class MissionStage {
+    WAIT_START,
+    RUN_TRAJECTORY,
+    FINISH_HOVER,
+    LAND_REQUESTED
+};
 
 mavros_msgs::State current_state;
 geometry_msgs::PoseStamped actual_pose;
@@ -61,6 +67,8 @@ nav_msgs::Path build_reference_path(const LissajousTrajectory& trajectory,
     path.header.frame_id = frame_id;
 
     samples = std::max(samples, 2);
+    cycles = std::max(cycles, 1.0);
+
     const double duration = cycles * trajectory.period();
 
     path.poses.reserve(static_cast<size_t>(samples));
@@ -98,6 +106,7 @@ int main(int argc, char** argv) {
     bool auto_arm;
     bool auto_offboard;
     bool use_yaw;
+    bool land_after_finish;
 
     double radius_x;
     double radius_y;
@@ -110,6 +119,8 @@ int main(int argc, char** argv) {
     double publish_rate;
     double start_delay;
     double reference_path_cycles;
+    double run_cycles;
+    double finish_hover_time;
 
     int preflight_setpoint_count;
     int actual_tail_size;
@@ -123,11 +134,13 @@ int main(int argc, char** argv) {
     std::string set_mode_service;
     std::string actual_pose_topic;
     std::string actual_cov_pose_topic;
+    std::string land_mode;
 
     pnh.param<bool>("setpoint_raw_mode", setpoint_raw_mode, true);
     pnh.param<bool>("auto_arm", auto_arm, true);
     pnh.param<bool>("auto_offboard", auto_offboard, true);
     pnh.param<bool>("use_yaw", use_yaw, true);
+    pnh.param<bool>("land_after_finish", land_after_finish, true);
 
     pnh.param<double>("radius_x", radius_x, 4.0);
     pnh.param<double>("radius_y", radius_y, 4.0);
@@ -140,6 +153,8 @@ int main(int argc, char** argv) {
     pnh.param<double>("publish_rate", publish_rate, 20.0);
     pnh.param<double>("start_delay", start_delay, 3.0);
     pnh.param<double>("reference_path_cycles", reference_path_cycles, 1.0);
+    pnh.param<double>("run_cycles", run_cycles, 0.0);
+    pnh.param<double>("finish_hover_time", finish_hover_time, 5.0);
 
     pnh.param<int>("preflight_setpoint_count", preflight_setpoint_count, 100);
     pnh.param<int>("actual_tail_size", actual_tail_size, 600);
@@ -153,6 +168,7 @@ int main(int argc, char** argv) {
     pnh.param<std::string>("set_mode_service", set_mode_service, "/mavros/set_mode");
     pnh.param<std::string>("actual_pose_topic", actual_pose_topic, "/mavros/local_position/pose");
     pnh.param<std::string>("actual_cov_pose_topic", actual_cov_pose_topic, "/datapose");
+    pnh.param<std::string>("land_mode", land_mode, "AUTO.LAND");
 
     if (angular_velocity <= 0.0) {
         ROS_ERROR("angular_velocity must be positive.");
@@ -164,6 +180,16 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    if (run_cycles < 0.0) {
+        ROS_WARN("run_cycles is %.3f. Continuous trajectory selected.", run_cycles);
+        run_cycles = 0.0;
+    }
+
+    if (finish_hover_time < 0.0) {
+        ROS_WARN("finish_hover_time is %.3f. Set to 0.0.", finish_hover_time);
+        finish_hover_time = 0.0;
+    }
+
     LissajousTrajectory trajectory(radius_x,
                                    radius_y,
                                    center_x,
@@ -173,6 +199,21 @@ int main(int argc, char** argv) {
                                    z_amplitude,
                                    z_harmonic,
                                    use_yaw);
+
+    const bool finite_run = run_cycles > 0.0;
+    const double trajectory_period = trajectory.period();
+    const double trajectory_duration = finite_run ? run_cycles * trajectory_period : 0.0;
+    const double path_cycles = finite_run ? run_cycles : reference_path_cycles;
+
+    ROS_INFO("Mission parameters:");
+    ROS_INFO("  run_cycles: %.6f", run_cycles);
+    ROS_INFO("  finite_run: %s", finite_run ? "true" : "false");
+    ROS_INFO("  angular_velocity: %.6f rad/s", angular_velocity);
+    ROS_INFO("  period: %.6f s", trajectory_period);
+    ROS_INFO("  trajectory_duration: %.6f s", trajectory_duration);
+    ROS_INFO("  finish_hover_time: %.6f s", finish_hover_time);
+    ROS_INFO("  land_after_finish: %s", land_after_finish ? "true" : "false");
+    ROS_INFO("  land_mode: %s", land_mode.c_str());
 
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>(state_topic, 20, state_cb);
     ros::Subscriber actual_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(actual_pose_topic, 50, actual_pose_cb);
@@ -192,7 +233,7 @@ int main(int argc, char** argv) {
 
     ros::Rate rate(publish_rate);
 
-    nav_msgs::Path reference_path = build_reference_path(trajectory, frame_id, reference_path_cycles, reference_path_samples);
+    nav_msgs::Path reference_path = build_reference_path(trajectory, frame_id, path_cycles, reference_path_samples);
     reference_path_pub.publish(reference_path);
 
     nav_msgs::Path actual_path;
@@ -230,17 +271,26 @@ int main(int argc, char** argv) {
     mavros_msgs::SetMode offb_set_mode;
     offb_set_mode.request.custom_mode = "OFFBOARD";
 
+    mavros_msgs::SetMode land_set_mode;
+    land_set_mode.request.custom_mode = land_mode;
+
     mavros_msgs::CommandBool arm_cmd;
     arm_cmd.request.value = true;
 
     ros::Time last_request = ros::Time::now();
-    bool trajectory_started = false;
+    ros::Time last_land_request = ros::Time(0);
+
+    MissionStage stage = MissionStage::WAIT_START;
+    bool landing_mode_requested = false;
+
     ros::Time trajectory_start_time;
+    ros::Time finish_hover_start_time;
 
     while (ros::ok()) {
         const ros::Time now = ros::Time::now();
 
-        if (auto_offboard &&
+        if (!landing_mode_requested &&
+            auto_offboard &&
             current_state.mode != "OFFBOARD" &&
             now - last_request > ros::Duration(2.0)) {
             if (set_mode_client.call(offb_set_mode) && offb_set_mode.response.mode_sent) {
@@ -249,7 +299,8 @@ int main(int argc, char** argv) {
             last_request = now;
         }
 
-        if (auto_arm &&
+        if (!landing_mode_requested &&
+            auto_arm &&
             current_state.mode == "OFFBOARD" &&
             !current_state.armed &&
             now - last_request > ros::Duration(2.0)) {
@@ -266,17 +317,67 @@ int main(int argc, char** argv) {
 
         mavros_msgs::PositionTarget target;
 
-        if (ready_for_trajectory) {
-            if (!trajectory_started) {
-                trajectory_started = true;
+        if (stage == MissionStage::WAIT_START) {
+            target = trajectory.calculate_hold_target(0.0);
+
+            if (ready_for_trajectory) {
+                stage = MissionStage::RUN_TRAJECTORY;
                 trajectory_start_time = now;
                 ROS_INFO("PVA trajectory started.");
             }
+        }
 
-            const double t = (now - trajectory_start_time).toSec();
-            target = trajectory.calculate_target_point(t);
-        } else {
-            target = trajectory.calculate_hold_target(0.0);
+        if (stage == MissionStage::RUN_TRAJECTORY) {
+            const double elapsed = (now - trajectory_start_time).toSec();
+
+            if (finite_run && elapsed >= trajectory_duration) {
+                stage = MissionStage::FINISH_HOVER;
+                finish_hover_start_time = now;
+                target = trajectory.calculate_hold_target(trajectory_duration);
+                ROS_INFO("PVA trajectory finished: elapsed %.3f / duration %.3f s.",
+                         elapsed,
+                         trajectory_duration);
+            } else {
+                target = trajectory.calculate_target_point(elapsed);
+                if (finite_run) {
+                    ROS_INFO_THROTTLE(1.0,
+                                      "PVA running: elapsed %.3f / %.3f s, cycle %.3f / %.3f.",
+                                      elapsed,
+                                      trajectory_duration,
+                                      elapsed / trajectory_period,
+                                      run_cycles);
+                }
+            }
+        }
+
+        if (stage == MissionStage::FINISH_HOVER) {
+            target = trajectory.calculate_hold_target(trajectory_duration);
+
+            const double finish_hover_elapsed = (now - finish_hover_start_time).toSec();
+
+            ROS_INFO_THROTTLE(1.0,
+                              "Finish hover: %.3f / %.3f s.",
+                              finish_hover_elapsed,
+                              finish_hover_time);
+
+            if (land_after_finish &&
+                finish_hover_elapsed >= finish_hover_time &&
+                now - last_land_request > ros::Duration(2.0)) {
+                if (set_mode_client.call(land_set_mode) && land_set_mode.response.mode_sent) {
+                    landing_mode_requested = true;
+                    stage = MissionStage::LAND_REQUESTED;
+                    ROS_INFO("Landing mode requested: %s", land_mode.c_str());
+                } else {
+                    ROS_WARN("Landing mode request failed: %s", land_mode.c_str());
+                }
+
+                last_land_request = now;
+            }
+        }
+
+        if (stage == MissionStage::LAND_REQUESTED) {
+            target = trajectory.calculate_hold_target(trajectory_duration);
+            ROS_INFO_THROTTLE(2.0, "Landing requested. Current PX4 mode: %s", current_state.mode.c_str());
         }
 
         target.header.stamp = now;

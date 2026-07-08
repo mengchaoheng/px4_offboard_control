@@ -10,7 +10,7 @@
     <param name="center_x" value="0.0"/>
     <param name="center_y" value="0.0"/>
     <param name="altitude" value="2.5"/>
-    <param name="angular_velocity" value="0.35"/>
+    <param name="angular_velocity" value="0.25"/>
     <param name="z_amplitude" value="0.5"/>
     <param name="z_harmonic" value="4.0"/>
     <param name="use_yaw" value="true"/>
@@ -23,6 +23,14 @@
     <param name="reference_path_cycles" value="1.0"/>
     <param name="reference_path_samples" value="800"/>
     <param name="frame_id" value="map"/>
+
+    <!-- Mission termination.
+         run_cycles <= 0.0: continuous trajectory.
+         run_cycles > 0.0: run this many closed Lissajous cycles. -->
+    <param name="run_cycles" value="3.0"/>
+    <param name="finish_hover_time" value="5.0"/>
+    <param name="land_after_finish" value="true"/>
+    <param name="land_mode" value="AUTO.LAND"/>
 
     <!-- MAVROS topics and services -->
     <param name="state_topic" value="/mavros/state"/>

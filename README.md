@@ -46,14 +46,7 @@ roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
 4. Run offboard node:
 ```
 cd ~/catkin_ws
-roslaunch px4_offboard_control offb_node.launch
-```
-You can select different startup methods on the first line of the `offb_node.launch` file:
-```xml
-    <!-- <node name="offb_dataset_node" pkg="px4_offboard_control" type="offb_dataset_node" output="screen"> --> <!-- trajectory from  data-->
-    <!-- <node name="offboard_node" pkg="px4_offboard_control" type="offboard_node" output="screen"> --> <!-- to a setpoint-->
-    <node name="offb_node" pkg="px4_offboard_control" type="offb_node" output="screen"> <!-- Lissajous-->
-     
+roslaunch px4_offboard_control lissajous_pva.launch
 ```
 =============================
 ## Another way:
@@ -96,7 +89,7 @@ If all running in the same computer, delete `-t 192.168.3.184` in mavlink start 
 4.run offboard node
 in the same computer which running mavros, run offboard node:
 ```
-roslaunch px4_offboard_control offb_node.launch
+roslaunch px4_offboard_control lissajous_pva.launch
 ```
 ###  PX4 uer_guide:
 
@@ -120,5 +113,5 @@ roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
 
 3. Offboard node
 ```
-roslaunch px4_offboard_control offb_node.launch
+roslaunch px4_offboard_control lissajous_pva.launch
 ```

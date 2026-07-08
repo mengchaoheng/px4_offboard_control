@@ -1,0 +1,41 @@
+<launch>
+  <arg name="rviz" default="true"/>
+
+  <node pkg="px4_offboard_control" type="offb_node_pva" name="offb_node_pva" output="screen">
+    <param name="setpoint_raw_mode" value="true"/>
+
+    <!-- Lissajous 3D PVA parameters -->
+    <param name="radius_x" value="4.0"/>
+    <param name="radius_y" value="4.0"/>
+    <param name="center_x" value="0.0"/>
+    <param name="center_y" value="0.0"/>
+    <param name="altitude" value="2.5"/>
+    <param name="angular_velocity" value="0.35"/>
+    <param name="z_amplitude" value="0.5"/>
+    <param name="z_harmonic" value="4.0"/>
+    <param name="use_yaw" value="true"/>
+
+    <!-- Timing and visualization -->
+    <param name="publish_rate" value="20.0"/>
+    <param name="start_delay" value="3.0"/>
+    <param name="preflight_setpoint_count" value="100"/>
+    <param name="actual_tail_size" value="70"/>
+    <param name="reference_path_cycles" value="1.0"/>
+    <param name="reference_path_samples" value="800"/>
+    <param name="frame_id" value="map"/>
+
+    <!-- MAVROS topics and services -->
+    <param name="state_topic" value="/mavros/state"/>
+    <param name="raw_setpoint_topic" value="/mavros/setpoint_raw/local"/>
+    <param name="local_setpoint_topic" value="/mavros/setpoint_position/local"/>
+    <param name="arming_service" value="/mavros/cmd/arming"/>
+    <param name="set_mode_service" value="/mavros/set_mode"/>
+
+    <!-- Actual-pose sources. The node accepts both; whichever updates becomes the actual trajectory. -->
+    <param name="actual_pose_topic" value="/mavros/local_position/pose"/>
+    <param name="actual_cov_pose_topic" value="/datapose"/>
+  </node>
+
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz_lissajous_tracking"
+        args="-d $(find px4_offboard_control)/config/lissajous_tracking.rviz"/>
+</launch>

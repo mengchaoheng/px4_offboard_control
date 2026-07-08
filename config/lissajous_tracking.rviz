@@ -1,0 +1,184 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Grid1
+        - /Reference Path1
+        - /Actual Tail1
+        - /Reference Pose1
+        - /Actual Pose1
+      Splitter Ratio: 0.5
+    Tree Height: 650
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+  - Class: rviz/Time
+    Name: Time
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Plane: XY
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 0.8
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        {}
+      Update Interval: 0
+      Value: true
+    - Class: rviz/Path
+      Enabled: true
+      Alpha: 1
+      Buffer Length: 1
+      Color: 0; 255; 0
+      Head Diameter: 0.18
+      Head Length: 0.20
+      Length: 0.35
+      Line Style: Lines
+      Line Width: 0.05
+      Name: Reference Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 0; 255; 0
+      Pose Style: None
+      Radius: 0.03
+      Shaft Diameter: 0.05
+      Shaft Length: 0.20
+      Topic: /reference_path
+      Unreliable: false
+      Value: true
+    - Class: rviz/Path
+      Enabled: true
+      Alpha: 1
+      Buffer Length: 1
+      Color: 255; 80; 80
+      Head Diameter: 0.18
+      Head Length: 0.20
+      Length: 0.35
+      Line Style: Lines
+      Line Width: 0.08
+      Name: Actual Tail
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 80; 80
+      Pose Style: None
+      Radius: 0.03
+      Shaft Diameter: 0.05
+      Shaft Length: 0.20
+      Topic: /actual_path_tail
+      Unreliable: false
+      Value: true
+    - Class: rviz/Pose
+      Enabled: true
+      Alpha: 1
+      Arrow Color: 0; 255; 0
+      Axes Length: 0.7
+      Axes Radius: 0.04
+      Color: 0; 255; 0
+      Head Length: 0.35
+      Head Radius: 0.12
+      Name: Reference Pose
+      Shaft Length: 0.55
+      Shaft Radius: 0.04
+      Shape: Arrow
+      Topic: /reference_pose
+      Unreliable: false
+      Value: true
+    - Class: rviz/Pose
+      Enabled: true
+      Alpha: 1
+      Arrow Color: 255; 80; 80
+      Axes Length: 0.7
+      Axes Radius: 0.04
+      Color: 255; 80; 80
+      Head Length: 0.35
+      Head Radius: 0.12
+      Name: Actual Pose
+      Shaft Length: 0.55
+      Shaft Radius: 0.04
+      Shape: Arrow
+      Topic: /actual_pose
+      Unreliable: false
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Default Light: true
+    Fixed Frame: map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+  Transformation:
+    Current:
+      Class: rviz/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 14
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 2.5
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.85
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 0.78
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 900
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000300000000000001b40000032cfc0200000002fb000000100044006900730070006c006100790073010000003d0000032c000000c900fffffffb0000000a0056006900650077007300000000000000032c000000a400ffffff000002ab0000032c00000004000000040000000800000008fc0000000100000002000000010000000a00540069006d00650100000000000002ab0000000000000000
+  Width: 1200
+  X: 80
+  Y: 60

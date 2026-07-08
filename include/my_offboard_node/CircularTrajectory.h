@@ -1,79 +1,155 @@
 #ifndef CIRCULAR_TRAJECTORY_H
 #define CIRCULAR_TRAJECTORY_H
 
+#include <cmath>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/PositionTarget.h>
-#include <math.h>
 
-// 轨迹基类
 class Trajectory {
 public:
     virtual geometry_msgs::PoseStamped calculate_pose(double time) = 0;
-
+    virtual ~Trajectory() = default;
 };
 
-// 圆形轨迹, Or can be change to lissajous
 class CircularTrajectory : public Trajectory {
-    double radius, center_x, center_y, altitude, angular_velocity;
+    double radius_, center_x_, center_y_, altitude_, angular_velocity_;
 
 public:
     CircularTrajectory(double r, double x, double y, double z, double w)
-        : radius(r), center_x(x), center_y(y), altitude(z), angular_velocity(w) {}
+        : radius_(r),
+          center_x_(x),
+          center_y_(y),
+          altitude_(z),
+          angular_velocity_(w) {}
 
     geometry_msgs::PoseStamped calculate_pose(double time) override {
         geometry_msgs::PoseStamped pose;
-        double theta = angular_velocity * time;
-        pose.pose.position.x = center_x + radius * sin(theta);
-        // pose.pose.position.y = center_y + radius * cos(theta);  // Circular
-        pose.pose.position.y = center_y + radius * sin(2*theta);   // lissajous
-        pose.pose.position.z = altitude;
+        const double theta = angular_velocity_ * time;
+
+        pose.pose.position.x = center_x_ + radius_ * std::sin(theta);
+        pose.pose.position.y = center_y_ + radius_ * std::cos(theta);
+        pose.pose.position.z = altitude_;
+
         return pose;
     }
 };
 
-
-// new 
-// lissajous
-class LissajousTrajectory {
-    double radius, center_x, center_y, altitude, angular_velocity;
+class LissajousTrajectory : public Trajectory {
+    double radius_x_;
+    double radius_y_;
+    double center_x_;
+    double center_y_;
+    double altitude_;
+    double angular_velocity_;
+    double z_amplitude_;
+    double z_harmonic_;
+    bool use_yaw_;
 
 public:
-    LissajousTrajectory(double r, double x, double y, double z, double w)
-        : radius(r), center_x(x), center_y(y), altitude(z), angular_velocity(w) {}
+    LissajousTrajectory(double radius_x,
+                        double radius_y,
+                        double center_x,
+                        double center_y,
+                        double altitude,
+                        double angular_velocity,
+                        double z_amplitude,
+                        double z_harmonic,
+                        bool use_yaw)
+        : radius_x_(radius_x),
+          radius_y_(radius_y),
+          center_x_(center_x),
+          center_y_(center_y),
+          altitude_(altitude),
+          angular_velocity_(angular_velocity),
+          z_amplitude_(z_amplitude),
+          z_harmonic_(z_harmonic),
+          use_yaw_(use_yaw) {}
 
-    mavros_msgs::PositionTarget calculate_target_point(double time){
-        mavros_msgs::PositionTarget target_point;
-        // Lissajous
-        double theta = angular_velocity * time;
+    geometry_msgs::PoseStamped calculate_pose(double time) override {
+        geometry_msgs::PoseStamped pose;
+        const mavros_msgs::PositionTarget target = calculate_target_point(time);
 
-        // x = r*sin((2*pi/T)*t);
-        // y = r*sin(2*(2*pi/T)*t);
-        target_point.position.x = center_x + radius*sin(theta);
-        target_point.position.y = center_y + radius*sin(2* theta);
-        target_point.position.z = altitude + 0.05*radius*sin(4*theta);
+        pose.pose.position = target.position;
+        pose.pose.orientation.w = 1.0;
 
-        // velocity
-        target_point.velocity.x = (radius*(angular_velocity))*cos(theta);
-        target_point.velocity.y = (radius*(2* angular_velocity))*cos(2* theta);
-        target_point.velocity.z = NAN;
+        return pose;
+    }
 
+    mavros_msgs::PositionTarget calculate_target_point(double time) const {
+        mavros_msgs::PositionTarget target;
 
-        // acc
-        target_point.acceleration_or_force.x = NAN;//-(radius*(angular_velocity)*(angular_velocity)) * sin(theta);
-        target_point.acceleration_or_force.y = NAN;//-(radius*(2* angular_velocity))*(2* angular_velocity) * sin(2* theta);
-        target_point.acceleration_or_force.z = NAN;
+        const double theta = angular_velocity_ * time;
+        const double omega = angular_velocity_;
+        const double k = z_harmonic_;
 
-        //yaw
-        // target_point.yaw = 0.f;
-        // _yawspeed_setpoint = NAN;
-        target_point.yaw =  atan2f((radius*(2* angular_velocity))*cos(2* theta), (radius*(angular_velocity))*cos(theta));
+        const double sx = std::sin(theta);
+        const double cx = std::cos(theta);
+        const double sy = std::sin(2.0 * theta);
+        const double cy = std::cos(2.0 * theta);
+        const double sz = std::sin(k * theta);
+        const double cz = std::cos(k * theta);
 
-        target_point.yaw_rate = NAN;
+        // P
+        target.position.x = center_x_ + radius_x_ * sx;
+        target.position.y = center_y_ + radius_y_ * sy;
+        target.position.z = altitude_ + z_amplitude_ * sz;
 
-        return target_point;
+        // V
+        target.velocity.x = radius_x_ * omega * cx;
+        target.velocity.y = 2.0 * radius_y_ * omega * cy;
+        target.velocity.z = z_amplitude_ * k * omega * cz;
+
+        // A
+        target.acceleration_or_force.x = -radius_x_ * omega * omega * sx;
+        target.acceleration_or_force.y = -4.0 * radius_y_ * omega * omega * sy;
+        target.acceleration_or_force.z = -z_amplitude_ * k * k * omega * omega * sz;
+
+        // Yaw follows horizontal velocity direction.
+        target.yaw = std::atan2(target.velocity.y, target.velocity.x);
+        target.yaw_rate = 0.0;
+
+        target.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
+        target.type_mask = mavros_msgs::PositionTarget::IGNORE_YAW_RATE;
+
+        if (!use_yaw_) {
+            target.type_mask |= mavros_msgs::PositionTarget::IGNORE_YAW;
+        }
+
+        return target;
+    }
+
+    mavros_msgs::PositionTarget calculate_hold_target(double time) const {
+        mavros_msgs::PositionTarget target = calculate_target_point(time);
+
+        target.velocity.x = 0.0;
+        target.velocity.y = 0.0;
+        target.velocity.z = 0.0;
+
+        target.acceleration_or_force.x = 0.0;
+        target.acceleration_or_force.y = 0.0;
+        target.acceleration_or_force.z = 0.0;
+
+        target.yaw_rate = 0.0;
+
+        target.type_mask =
+            mavros_msgs::PositionTarget::IGNORE_VX |
+            mavros_msgs::PositionTarget::IGNORE_VY |
+            mavros_msgs::PositionTarget::IGNORE_VZ |
+            mavros_msgs::PositionTarget::IGNORE_AFX |
+            mavros_msgs::PositionTarget::IGNORE_AFY |
+            mavros_msgs::PositionTarget::IGNORE_AFZ |
+            mavros_msgs::PositionTarget::IGNORE_YAW_RATE;
+
+        if (!use_yaw_) {
+            target.type_mask |= mavros_msgs::PositionTarget::IGNORE_YAW;
+        }
+
+        return target;
+    }
+
+    double period() const {
+        return 2.0 * M_PI / angular_velocity_;
     }
 };
 
-
-#endif // CIRCULAR_TRAJECTORY_H
-
+#endif  // CIRCULAR_TRAJECTORY_H

@@ -137,10 +137,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/px4_offboard_control_node.cpp)
-add_executable(offb_node src/offb_node.cpp)
-add_executable(offb_dataset_node src/offb_dataset_node.cpp)
-add_executable(offboard_node src/offboard_node.cpp)
 
+add_executable(offb_node_pva src/offb_node_pva.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -156,9 +154,8 @@ add_executable(offboard_node src/offboard_node.cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-target_link_libraries(offb_node ${catkin_LIBRARIES})
-target_link_libraries(offb_dataset_node ${catkin_LIBRARIES})
-target_link_libraries(offboard_node ${catkin_LIBRARIES})
+
+target_link_libraries(offb_node_pva ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############

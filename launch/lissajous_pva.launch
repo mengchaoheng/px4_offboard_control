@@ -5,13 +5,13 @@
     <param name="setpoint_raw_mode" value="true"/>
 
     <!-- Lissajous 3D PVA parameters -->
-    <param name="radius_x" value="4.0"/>
-    <param name="radius_y" value="4.0"/>
+    <param name="radius_x" value="5.0"/>
+    <param name="radius_y" value="5.0"/>
     <param name="center_x" value="0.0"/>
     <param name="center_y" value="0.0"/>
-    <param name="altitude" value="2.5"/>
-    <param name="angular_velocity" value="0.25"/>
-    <param name="z_amplitude" value="0.5"/>
+    <param name="altitude" value="3.0"/>
+    <param name="angular_velocity" value="0.3"/>
+    <param name="z_amplitude" value="1.0"/>
     <param name="z_harmonic" value="4.0"/>
     <param name="use_yaw" value="true"/>
 
@@ -19,7 +19,7 @@
     <param name="publish_rate" value="100.0"/>
     <param name="start_delay" value="15.0"/>
     <param name="preflight_setpoint_count" value="500"/>
-    <param name="actual_tail_size" value="200"/>
+    <param name="actual_tail_size" value="300"/>
     <param name="reference_path_cycles" value="1.0"/>
     <param name="reference_path_samples" value="800"/>
     <param name="frame_id" value="map"/>
@@ -27,7 +27,7 @@
     <!-- Mission termination.
          run_cycles <= 0.0: continuous trajectory.
          run_cycles > 0.0: run this many closed Lissajous cycles. -->
-    <param name="run_cycles" value="3.0"/>
+    <param name="run_cycles" value="1.0"/>
     <param name="finish_hover_time" value="5.0"/>
     <param name="land_after_finish" value="true"/>
     <param name="land_mode" value="AUTO.LAND"/>
